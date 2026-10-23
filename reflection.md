@@ -3,7 +3,17 @@
 ## 1. System Design
 
 **a. Initial design**
+1. A user should be able to add their pet(s) to this app.
+2. They should be able to input what the pet specifically needs (meds, health concerns, appointments)
+3. They should be able to add and edit tasks to their pet's schedule (maybe walks or trips)
 
+Pet Class - pet details and tasks that a pet needs
+
+Task Class -  an activity that relates to a pet, with a time and frequency and completion status
+
+Owner Class -  can own multiple pets and their tasks. should be able to see all their tasks
+
+Scheduler - The "Brain" that retrieves, organizes, and manages tasks across pets. It must read from that Owner method rather than from a single pet, or it will not earn the multi-pet point.
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
