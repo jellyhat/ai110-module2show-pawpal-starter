@@ -109,6 +109,16 @@ Sample test output:
 | Conflict warnings | `Scheduler.detect_conflicts` | Checks scheduled intervals pairwise and returns warning messages for overlaps, including across pets. This check is separate from daily plan generation. |
 | Recurring tasks | `Task.frequency`, `Pet.complete_task` | Supports one-time, daily, and weekly tasks. Completing a recurring task adds its next occurrence; weekly tasks recur on their start weekday. |
 
+## Testing PawPal+
+
+Run the automated tests with:
+
+```python -m pytest
+```
+
+The test suite checks task creation and completion, recurring task generation,
+sorting and filtering, schedule deadlines and time limits, and overlap warnings.
+
 ## 📸 Demo Walkthrough
 
 Describe your app in numbered steps so a reader can follow along without watching a video:

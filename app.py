@@ -5,10 +5,13 @@ from pawpal_system import Owner, Pet, Scheduler, Task
 
 st.set_page_config(page_title="PawPal+", page_icon="🐾", layout="centered")
 
-if "owner" not in st.session_state:
-    st.session_state["owner"] = Owner(name="Jordan")
+if "owners" not in st.session_state:
+    existing_owner = st.session_state.get("owner")
+    st.session_state["owners"] = (
+        [existing_owner] if isinstance(existing_owner, Owner) else []
+    )
 
-owner = st.session_state["owner"]
+owners = st.session_state["owners"]
 
 st.title("🐾 PawPal+")
 
@@ -40,32 +43,78 @@ At minimum, your system should:
 
 st.divider()
 
-st.subheader("Add a Pet")
-with st.form("add_pet_form", clear_on_submit=True):
-    pet_name = st.text_input("Pet name")
-    species = st.selectbox("Species", ["dog", "cat", "other"])
-    add_pet = st.form_submit_button("Add pet")
+st.subheader("Add an Owner")
+with st.form("add_owner_form", clear_on_submit=True):
+    owner_name = st.text_input("Owner name")
+    add_owner = st.form_submit_button("Add owner")
 
-if add_pet:
+if add_owner:
     try:
-        owner.add_pet(Pet(name=pet_name.strip(), species=species))
+        owners.append(Owner(name=owner_name.strip()))
     except ValueError as error:
         st.error(str(error))
     else:
-        st.success(f"Added {pet_name.strip()} to {owner.name}'s pets.")
+        st.success(f"Added owner {owner_name.strip()}.")
 
-if owner.pets:
+owner = None
+if owners:
+    owner_labels = [
+        f"{index + 1}. {registered_owner.name}"
+        for index, registered_owner in enumerate(owners)
+    ]
+    selected_owner_label = st.selectbox(
+        "Select owner to manage",
+        options=owner_labels,
+        key="active_owner",
+    )
+    owner = owners[owner_labels.index(selected_owner_label)]
+else:
+    st.info("Add an owner before adding pets or care tasks.")
+
+st.divider()
+
+st.subheader("Add a Pet")
+if owners:
+    pet_owner_options = ["Select an owner"] + owner_labels
+    with st.form("add_pet_form", clear_on_submit=True):
+        pet_name = st.text_input("Pet name")
+        species = st.selectbox("Species", ["dog", "cat", "other"])
+        selected_pet_owner_label = st.selectbox(
+            "Owner (required)", options=pet_owner_options
+        )
+        add_pet = st.form_submit_button("Add pet")
+
+    if add_pet:
+        if selected_pet_owner_label == "Select an owner":
+            st.error("Select an owner for this pet.")
+        else:
+            selected_pet_owner = owners[
+                owner_labels.index(selected_pet_owner_label)
+            ]
+            try:
+                selected_pet_owner.add_pet(
+                    Pet(name=pet_name.strip(), species=species)
+                )
+            except ValueError as error:
+                st.error(str(error))
+            else:
+                st.success(
+                    f"Added {pet_name.strip()} to "
+                    f"{selected_pet_owner.name}'s pets."
+                )
+
+if owner is not None and owner.pets:
     st.caption(
-        "Pets: "
+        f"Pets for {owner.name}: "
         + ", ".join(f"{pet.name} ({pet.species})" for pet in owner.pets)
     )
 else:
-    st.info("Add a pet before creating a care task.")
+    st.info("Add a pet to the selected owner before creating a care task.")
 
 st.divider()
 
 st.subheader("Add a Care Task")
-if owner.pets:
+if owner is not None and owner.pets:
     pet_options = [
         f"{index + 1}. {pet.name} ({pet.species})"
         for index, pet in enumerate(owner.pets)
@@ -104,7 +153,7 @@ if owner.pets:
         else:
             st.success(f"Added {task_title.strip()} for {selected_pet.name}.")
 
-tasks = owner.get_all_tasks()
+tasks = owner.get_all_tasks() if owner is not None else []
 if tasks:
     st.markdown("### Current Tasks")
     pet_filter = st.selectbox(
@@ -159,37 +208,38 @@ if tasks:
 
 st.divider()
 
-st.subheader("Build Schedule")
-with st.form("schedule_form"):
-    available_minutes = st.number_input(
-        "Time available today (minutes)",
-        min_value=0,
-        max_value=1440,
-        value=240,
-    )
-    day_start = st.time_input("Start time", value=datetime_time(8, 0))
-    schedule_pet = st.selectbox(
-        "Schedule pet",
-        ["All pets"] + [pet.name for pet in owner.pets],
-        key="schedule_pet_filter",
-    )
-    schedule_status = st.selectbox(
-        "Schedule task status",
-        ["all", "pending", "completed"],
-        index=1,
-    )
-    generate_schedule = st.form_submit_button("Generate schedule")
-
-if generate_schedule:
-    if not tasks:
-        st.info("Add at least one task before generating a schedule.")
-    else:
-        scheduler = Scheduler()
-        plan = scheduler.build_daily_plan(
-            owner,
-            available_minutes=int(available_minutes),
-            day_start=day_start,
-            pet_name=None if schedule_pet == "All pets" else schedule_pet,
-            status=schedule_status,
+if owner is not None:
+    st.subheader("Build Schedule")
+    with st.form("schedule_form"):
+        available_minutes = st.number_input(
+            "Time available today (minutes)",
+            min_value=0,
+            max_value=1440,
+            value=240,
         )
-        st.text(scheduler.explain_plan(plan))
+        day_start = st.time_input("Start time", value=datetime_time(8, 0))
+        schedule_pet = st.selectbox(
+            "Schedule pet",
+            ["All pets"] + [pet.name for pet in owner.pets],
+            key="schedule_pet_filter",
+        )
+        schedule_status = st.selectbox(
+            "Schedule task status",
+            ["all", "pending", "completed"],
+            index=1,
+        )
+        generate_schedule = st.form_submit_button("Generate schedule")
+
+    if generate_schedule:
+        if not tasks:
+            st.info("Add at least one task before generating a schedule.")
+        else:
+            scheduler = Scheduler()
+            plan = scheduler.build_daily_plan(
+                owner,
+                available_minutes=int(available_minutes),
+                day_start=day_start,
+                pet_name=None if schedule_pet == "All pets" else schedule_pet,
+                status=schedule_status,
+            )
+            st.text(scheduler.explain_plan(plan))
