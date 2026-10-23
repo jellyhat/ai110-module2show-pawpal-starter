@@ -17,10 +17,18 @@ Scheduler - The "Brain" that retrieves, organizes, and manages tasks across pets
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+The UML design has one brain class that cascades down from Owner, to Pet, to each individual Task. Each (multiple) Task belongs to a Pet, an Owner can have multiple pets and the Scheduler can start planning based on that.
+
+
+
 **b. Design changes**
 
 - Did your design change during implementation?
+
+Yes, after reviewing with my agent, it brought up that the Task relationship was not so concrete and could be refined.
 - If yes, describe at least one change and why you made it.
+
+We ended up making sure each Task had a pet it belongs to, adjusted the scheduler so that it would be able to know all this and have each pet association with each task.
 
 ---
 

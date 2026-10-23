@@ -12,7 +12,7 @@ classDiagram
         +int durationMinutes
         +String priority
         +String frequency
-        +String time
+        +Time dueTime
         +bool isComplete
         +markComplete()
     }
@@ -22,15 +22,46 @@ classDiagram
         +List~String~ preferences
         +List~Pet~ pets
         +addPet(pet)
-        +getAllTasks()
+        +getAllTasks() List~PetTask~
+    }
+
+    class PetTask {
+        +Pet pet
+        +Task task
+    }
+
+    class ScheduledTask {
+        +Pet pet
+        +Task task
+        +Time startTime
+    }
+
+    class SkippedTask {
+        +Pet pet
+        +Task task
+        +String reason
+    }
+
+    class SchedulePlan {
+        +List~ScheduledTask~ scheduled
+        +List~SkippedTask~ skipped
+        +int availableMinutes
+        +Time dayStart
     }
 
     class Scheduler {
-        +buildDailyPlan(owner, availableMinutes)
-        +organizeTasks(tasks, availableMinutes)
-        +explainPlan()
+        +buildDailyPlan(owner, availableMinutes, dayStart) SchedulePlan
+        +organizeTasks(petTasks, availableMinutes, dayStart, preferences) SchedulePlan
+        +explainPlan(plan) String
     }
 
     Owner "1" *-- "0..*" Pet : owns
     Pet "1" *-- "0..*" Task : has
     Scheduler ..> Owner : retrieves tasks across pets
+    Owner ..> PetTask : returns pet-task pairs
+    SchedulePlan "1" *-- "0..*" ScheduledTask : includes
+    SchedulePlan "1" *-- "0..*" SkippedTask : explains omissions
+    ScheduledTask --> Pet
+    ScheduledTask --> Task
+    SkippedTask --> Pet
+    SkippedTask --> Task
