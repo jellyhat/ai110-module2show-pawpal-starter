@@ -1,0 +1,96 @@
+classDiagram
+    direction LR
+
+    class PawPalUI {
+        <<app.py module>>
+        +List~Owner~ owners session state
+        +Owner selectedOwner
+    }
+
+    class Owner {
+        +String name
+        +List~String~ preferences
+        +List~Pet~ pets
+        +addPet(pet)
+        +getAllTasks(petName, status, asOfDate) List~PetTask~
+    }
+
+    class Pet {
+        +String name
+        +String species
+        +List~Task~ tasks
+        +addTask(task)
+        +completeTask(task, completedOn) Optional~Task~
+        +getTasks() List~Task~
+    }
+
+    class Task {
+        +String title
+        +int durationMinutes
+        +String priority
+        +String frequency
+        +Time dueTime
+        +bool isComplete
+        +Date startsOn
+        +Date completedOn
+        +markComplete(completedOn)
+    }
+
+    class PetTask {
+        <<temporary association>>
+        +Pet pet
+        +Task task
+    }
+
+    class Scheduler {
+        +sortByTime(tasks) List~Task~
+        +filterTasks(petTasks, petName, status, asOfDate) List~PetTask~
+        +buildDailyPlan(owner, availableMinutes, dayStart, petName, status, scheduleDate) SchedulePlan
+        +organizeTasks(petTasks, availableMinutes, dayStart, preferences, petName, status, scheduleDate) SchedulePlan
+        +detectConflicts(scheduledTasks) List~String~
+        +explainPlan(plan) String
+    }
+
+    class SchedulePlan {
+        +List~ScheduledTask~ scheduled
+        +List~SkippedTask~ skipped
+        +int availableMinutes
+        +Time dayStart
+    }
+
+    class ScheduledTask {
+        +Pet pet
+        +Task task
+        +Time startTime
+    }
+
+    class SkippedTask {
+        +Pet pet
+        +Task task
+        +String reason
+    }
+
+    PawPalUI ..> Owner : creates and selects from session state
+    PawPalUI ..> Pet : creates for selected owner
+    PawPalUI ..> Task : creates and completes
+    PawPalUI ..> Scheduler : filters, sorts, plans, checks conflicts
+    Owner "1" *-- "0..*" Pet : owns
+    Pet "1" *-- "0..*" Task : stores occurrences
+    Owner ..> PetTask : getAllTasks returns pairs
+    PetTask --> Pet
+    PetTask --> Task
+    Scheduler ..> Owner : requests all tasks and preferences
+    Scheduler ..> PetTask : filters and organizes task-pet pairs
+    Scheduler ..> SchedulePlan : builds
+    SchedulePlan "1" *-- "0..*" ScheduledTask : scheduled entries
+    SchedulePlan "1" *-- "0..*" SkippedTask : skipped with reason
+    ScheduledTask --> Pet
+    ScheduledTask --> Task
+    SkippedTask --> Pet
+    SkippedTask --> Task
+    Scheduler ..> ScheduledTask : checks overlapping intervals
+    Scheduler ..> SkippedTask : records exclusions and scheduling limits
+
+    note for PawPalUI "The Streamlit module creates owners, requires an owner selection when adding a pet, and scopes task management and schedules to the selected owner."
+    note for Pet "Completing a recurring occurrence stores it as complete and adds a new Task for its next occurrence."
+    note for Scheduler "Conflict checks return warning strings and are separate from the sequential daily-plan builder."

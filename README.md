@@ -83,22 +83,6 @@ Daily plan starting at 07:30 (60 minutes available). Tasks are ordered by due ti
 - Not scheduled: Nail trim for Mochi (Already completed.)
 ```
 
-## 🧪 Testing PawPal+
-
-```bash
-# Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
-```
-
-Sample test output:
-
-```
-# Paste your pytest output here
-```
-
 ## 📐 Smarter Scheduling
 
 | Feature | Method(s) | Notes |
@@ -119,14 +103,44 @@ Run the automated tests with:
 The test suite checks task creation and completion, recurring task generation,
 sorting and filtering, schedule deadlines and time limits, and overlap warnings.
 
+```
+====================================== test session starts ======================================
+platform darwin -- Python 3.9.6, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/linda/Desktop/temp/ai110-module2show-pawpal-starter
+collected 22 items                                                                              
+
+test/test_pawpal.py ......................                                                [100%]
+
+====================================== 22 passed in 0.01s =======================================
+```
+
+Confidence level ⭐⭐⭐⭐⭐
+
+## Features
+
+- **Task sorting:** Sorts tasks chronologically by due time; tasks without a due time appear last. Daily plans break equal due-time ties by priority.
+- **Pet and status filtering:** Filters tasks by pet name and completion status (`all`, `pending`, or `completed`).
+- **Time-budget scheduling:** Builds a sequential daily plan from the chosen start time and available minutes, skipping tasks that exceed the budget or run past midnight.
+- **Deadline handling:** Skips tasks that cannot finish by their due time and explains why.
+- **Conflict warnings:** Checks scheduled task intervals and returns warnings for overlaps, including across pets. This is a separate check and does not automatically alter the daily plan.
+- **Recurring tasks:** Supports one-time, daily, and weekly frequencies. Completing a daily or weekly task creates a new pending occurrence for the next day or matching weekday.
+- **Owner and pet management:** Lets users create owners, assign pets to a selected owner, and manage that owner's tasks and schedule in the Streamlit app.
+
 ## 📸 Demo Walkthrough
 
 Describe your app in numbered steps so a reader can follow along without watching a video:
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+Pre-step: run with ```streamlit run app.py```
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+1. You must enter an Owner name (probably yourself).
+2. After this you may add pets, each pet needs a name, species and an owner (given by the first entry box)
+3. After that, tasks can now be created. Tasks are specific to to each pet and you can specify its title, duration, priority, how often it repeats, and whether it needs to be done by a certain time.
+4. At this point you create as many tasks as like for your schedule. They will appear under current tasks, where you can mark them as complete if you are doing it one by one.
+5. You can also build a schedule for each owner when you select which owner to manage. When you build the schedule you specify how much time you have today, when you start, whether you are taking care of all your pets or just one today, and what status your tasks need to be. If you complete a task you can filter out here so it doesn't show in your schedule.
+
+Example walkthrough:
+1. Under **Add an Owner**, enter `Jordan` and click **Add owner**. Select Jordan in **Select owner to manage**.
+2. Under **Add a Pet**, add `Mochi` as a dog and choose Jordan in the required owner dropdown. Add `Luna` as a cat and assign her to Jordan too.
+3. Add tasks for each pet, for example Mochi's **Breakfast** (10 minutes, high priority, due at 08:00) and **Morning walk** (25 minutes, medium priority, due at 09:00), plus Luna's **Medication** (5 minutes, high priority, due at 08:30). Set a task's repeat frequency if it should recur.
+4. Review **Current Tasks**. They are sorted by due time; use the pet and status filters to narrow the list. Mark a pending task complete to see its status change. Completing a daily or weekly task also adds its next occurrence.
+5. Under **Build Schedule**, choose 60 minutes, a 07:30 start, **All pets**, and **pending** tasks, then click **Generate schedule**. Review the plan and any skipped-task explanations. Adjust the available time or filters and generate it again to compare.
