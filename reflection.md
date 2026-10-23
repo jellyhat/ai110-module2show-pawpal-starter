@@ -38,11 +38,14 @@ We ended up making sure each Task had a pet it belongs to, adjusted the schedule
 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
+It considers avaliable time, priority, the task times and owner preferences. I think these are the basic constraints that should matter and should cover most cases, any others seemed too esoteric.
 
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+
+One tradeoff is simple ordering in organize_tasks(). It orders by due time, priority and schedules in that order and doesn't try to optimize more to fit in more tasks/priorities. I think it would be a bit hard to compute that and seems like an edge case if you have that many tasks for one dog and that many needs.
 
 ---
 
